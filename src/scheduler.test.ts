@@ -1,5 +1,4 @@
-import { review, EASE_MIN, EASE_MAX, EASE_DEFAULT } from './scheduler';
-
+import { review, EASE_MIN, EASE_MAX, EASE_DEFAULT, EASE_EASY_BONUS } from './scheduler';
 const baseCard = {
   id: 'test-1',
   front: 'What is 2 + 2?',
@@ -51,4 +50,21 @@ describe('review() ease-factor clamping', () => {
     // quality 0 resets interval but does not update ease
     expect(result.ease).toBeGreaterThanOrEqual(EASE_MIN);
   });
+
+  test('easy answers grow ease gently using EASE_EASY_BONUS', () => {
+    const once = review(baseCard, 3);
+    expect(once.ease).toBeCloseTo(EASE_DEFAULT + EASE_EASY_BONUS);
+  });
+
+  test('easy ease growth is gentler than the full EASE_DELTA step', () => {
+    const easy = review(baseCard, 3);
+    expect(easy.ease - EASE_DEFAULT).toBeLessThan(0.1);
+  });
+
+  test('repeated easy answers keep ease within EASE_MAX', () => {
+    const result = applyRating(baseCard, 3, 50);
+    expect(result.ease).toBeLessThanOrEqual(EASE_MAX);
+    expect(result.ease).toBeGreaterThan(EASE_DEFAULT);
+  });
+  
 });
